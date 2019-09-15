@@ -14,7 +14,7 @@ internal extension CollectionViewGridLayout {
             // footer height
             sizeTracker.advance(inScrollDirectionBy: _footerReferenceHeight(in: section, scrollDirection: scrollDirection))
             // items height
-            sizeTracker.advance(inScrollDirectionBy: _itemsContentHeight(in: section) + _computedsectionInset(in: section))
+            sizeTracker.advance(inScrollDirectionBy: _itemsContentHeight(in: section) + _computedsectionInset(in: section, scrollDirection: scrollDirection))
         }
         
         let visibleContentSize = collectionView.visibleRect.size

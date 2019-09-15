@@ -1,9 +1,5 @@
 # CocoaCollectionViewLayouts
 
-This is a list of layouts that I frequently used in my development. 
-
-
-
 ### FAQ
 
 <details><summary>Q: Horizontal scrolling doesn't work.</summary>
@@ -58,3 +54,7 @@ However, if you quit your application normally:
 Anything will works as you expected in the next application run (including launching from Xcode).
 
 </details> 
+
+---
+
+Any suggestions and pull requests is welcome.

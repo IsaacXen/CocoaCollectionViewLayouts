@@ -92,7 +92,7 @@ internal extension CollectionViewGridLayout {
     }
     
     func _itemSize(in section: Int) -> NSSize {
-        var availableWidth = _availableWidth(in: section) - _computedsectionInset(in: section)
+        var availableWidth = _availableWidth(in: section) - _computedsectionInset(in: section, scrollDirection: scrollDirection, counter: true)
         let columns = _numberOfColumns(in: section)
         let maxWidth = _maximumSectionWidth(in: section)
         
@@ -109,7 +109,7 @@ internal extension CollectionViewGridLayout {
     }
     
     func _numberOfColumns(in section: Int) -> Int {
-        var availableWidth = _availableWidth(in: section) - _computedsectionInset(in: section)
+        var availableWidth = _availableWidth(in: section) - _computedsectionInset(in: section, scrollDirection: scrollDirection, counter: true)
         let itemSize = _minimumItemSize(in: section)
         let maxColumnsCount = _maxNumberOfColumns(in: section)
         
@@ -153,9 +153,16 @@ internal extension CollectionViewGridLayout {
         return itemHeight * rows + max(0, rows - 1) * lineSpacing
     }
     
-    func _computedsectionInset(in section: Int) -> CGFloat {
+    func _computedsectionInset(in section: Int, scrollDirection: NSCollectionView.ScrollDirection, counter: Bool = false) -> CGFloat {
         let inset = _sectionInset(in: section)
-        return scrollDirection == .vertical ? inset.left + inset.right : inset.top + inset.bottom
+        
+        switch (counter, scrollDirection) {
+        case (false, .vertical), (true, .horizontal):
+            return inset.top + inset.bottom
+        default:
+            return inset.left + inset.right
+        }
+        
     }
     
     func _leadingOffset(in section: Int) -> CGFloat {
