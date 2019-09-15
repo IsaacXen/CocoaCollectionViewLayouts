@@ -1,6 +1,6 @@
 import AppKit
 
-@objc protocol CollectionViewDelegateFlowLayout: class {
+@objc public protocol CollectionViewDelegateFlowLayout: class {
     
     // MARK: - Getting the Size of Items
     
