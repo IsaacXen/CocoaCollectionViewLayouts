@@ -38,7 +38,7 @@ public class CollectionViewGridLayout: NSCollectionViewLayout {
     /// The default value of thsi property is 0, which means use as many columns as needed. Any value less than 0 will be ignored.
     public var maximumNumberOfColumns: Int = 0
     
-    /// The maximum width to use in section.
+    /// The maximum width to use in section, inculding inset.
     ///
     /// The default value of this property is 0, which means use any width available. Any value less than minimum item width (or height when `.horizontal` scrolling) will be ignored and use the default value instead.
     public var maximumSectionWidth: CGFloat = 0
