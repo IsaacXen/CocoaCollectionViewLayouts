@@ -42,6 +42,9 @@ internal extension CollectionViewGridLayout {
         let leadingOffset = _leadingOffset(in: section)
         let topInset = _sectionInset(in: section).top
         
+        let itemWidth = scrollDirection == .vertical ? itemSize.width : itemSize.height
+        let rtlOffset = _layoutDirection == .rightToLeft ? itemWidth : 0
+        
         guard columns > 0, rows > 0 else { return tracker }
         
         Array(0..<collectionView.numberOfItems(inSection: section)).forEach { item in
@@ -57,7 +60,7 @@ internal extension CollectionViewGridLayout {
                 r = r + 1
             }
 
-            let dx = CGFloat(max(0, c)) * (itemSize.width + interItemSpacing)
+            let dx = CGFloat(max(0, c)) * (itemSize.width + interItemSpacing + rtlOffset)
             let dy = CGFloat(max(0, r - 1)) * (itemSize.height + lineSpacing)
             
             let x = tracker.advancing(inCounterScrollDirectionBy: dx + leadingOffset)
