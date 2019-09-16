@@ -42,8 +42,7 @@ internal extension CollectionViewGridLayout {
         let leadingOffset = _leadingOffset(in: section)
         let topInset = _sectionInset(in: section).top
         
-        let itemWidth = scrollDirection == .vertical ? itemSize.width : itemSize.height
-        let rtlOffset = _layoutDirection == .rightToLeft ? itemWidth : 0
+        let rtlOffset = _layoutDirection == .rightToLeft ? (scrollDirection == .vertical ? itemSize.width : -itemSize.width) : 0
         
         guard columns > 0, rows > 0 else { return tracker }
         
@@ -63,8 +62,16 @@ internal extension CollectionViewGridLayout {
             let dx = CGFloat(max(0, c)) * (itemSize.width + interItemSpacing)
             let dy = CGFloat(max(0, r - 1)) * (itemSize.height + lineSpacing)
             
-            let x = tracker.advancing(inCounterScrollDirectionBy: dx + leadingOffset + rtlOffset)
-            let y = tracker.advancing(inScrollDirectionBy: dy + topInset)
+            let x: CGFloat
+            let y: CGFloat
+            
+            if _layoutDirection == .rightToLeft && scrollDirection == .horizontal {
+                x = tracker.advancing(inScrollDirectionBy: dx + leadingOffset + rtlOffset)
+                y = tracker.advancing(inCounterScrollDirectionBy: dy + topInset)
+            } else {
+                x = tracker.advancing(inCounterScrollDirectionBy: dx + leadingOffset + rtlOffset)
+                y = tracker.advancing(inScrollDirectionBy: dy + topInset)
+            }
             
             attributes.frame = NSMakeRect(x, y, itemSize.width, itemSize.height)
             
