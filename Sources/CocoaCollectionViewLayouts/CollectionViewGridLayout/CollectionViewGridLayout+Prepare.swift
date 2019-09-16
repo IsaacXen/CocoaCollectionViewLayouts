@@ -60,10 +60,10 @@ internal extension CollectionViewGridLayout {
                 r = r + 1
             }
 
-            let dx = CGFloat(max(0, c)) * (itemSize.width + interItemSpacing + rtlOffset)
+            let dx = CGFloat(max(0, c)) * (itemSize.width + interItemSpacing)
             let dy = CGFloat(max(0, r - 1)) * (itemSize.height + lineSpacing)
             
-            let x = tracker.advancing(inCounterScrollDirectionBy: dx + leadingOffset)
+            let x = tracker.advancing(inCounterScrollDirectionBy: dx + leadingOffset + rtlOffset)
             let y = tracker.advancing(inScrollDirectionBy: dy + topInset)
             
             attributes.frame = NSMakeRect(x, y, itemSize.width, itemSize.height)
