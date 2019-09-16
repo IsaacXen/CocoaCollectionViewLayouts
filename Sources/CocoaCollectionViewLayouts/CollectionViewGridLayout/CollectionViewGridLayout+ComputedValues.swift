@@ -168,9 +168,10 @@ internal extension CollectionViewGridLayout {
     func _leadingOffset(in section: Int) -> CGFloat {
         guard let collectionView = collectionView else { return 0 }
         let visibleWidth = scrollDirection == .vertical ? collectionView.visibleRect.width : collectionView.visibleRect.height
+        let inset = _layoutDirection == .leftToRight ? _sectionInset(in: section).left : _sectionInset(in: section).right
         let dw = visibleWidth - _availableWidth(in: section)
         
-        return dw / 2 + _sectionInset(in: section).left
+        return dw / 2 + inset
     }
     
 }
