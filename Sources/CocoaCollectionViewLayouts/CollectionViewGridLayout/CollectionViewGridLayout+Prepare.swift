@@ -59,8 +59,16 @@ internal extension CollectionViewGridLayout {
                 r = r + 1
             }
 
-            let dx = CGFloat(max(0, c)) * (itemSize.width + interItemSpacing)
-            let dy = CGFloat(max(0, r - 1)) * (itemSize.height + lineSpacing)
+            let dx: CGFloat
+            let dy: CGFloat
+            
+            if scrollDirection == .horizontal {
+                dx = CGFloat(max(0, c)) * (itemSize.width + lineSpacing)
+                dy = CGFloat(max(0, r - 1)) * (itemSize.height + interItemSpacing)
+            } else {
+                dx = CGFloat(max(0, c)) * (itemSize.width + interItemSpacing)
+                dy = CGFloat(max(0, r - 1)) * (itemSize.height + lineSpacing)
+            }
             
             let x: CGFloat
             let y: CGFloat
