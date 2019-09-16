@@ -42,7 +42,7 @@ internal extension CollectionViewGridLayout {
         let leadingOffset = _leadingOffset(in: section)
         let topInset = _sectionInset(in: section).top
         
-        let rtlOffset = _layoutDirection == .rightToLeft ? (scrollDirection == .vertical ? itemSize.width : -itemSize.width) : 0
+        let rtlOffset = _layoutDirection == .rightToLeft ? itemSize.width : 0
         
         guard columns > 0, rows > 0 else { return tracker }
         
