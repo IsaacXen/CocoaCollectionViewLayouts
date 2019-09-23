@@ -49,7 +49,7 @@ internal extension NSCollectionViewLayout {
         }
         
         public var relativeX: CGFloat {
-            get {
+//            get {
                 switch (scrollDirection, layoutDirection) {
                     case (.vertical,   .leftToRight): return location.x - origin.x
                     case (.vertical,   .rightToLeft): return origin.x - location.x
@@ -57,21 +57,21 @@ internal extension NSCollectionViewLayout {
                     case (.horizontal, .rightToLeft): return location.y - origin.y
                     @unknown default: return .nan
                 }
-            }
-            
-            set {
-                switch (scrollDirection, layoutDirection) {
-                    case (.vertical,   .leftToRight): location.x += newValue
-                    case (.vertical,   .rightToLeft): location.x -= newValue
-                    case (.horizontal, .leftToRight): location.y += newValue
-                    case (.horizontal, .rightToLeft): location.y += newValue
-                    @unknown default: ()
-                }
-            }
+//            }
+//
+//            set {
+//                switch (scrollDirection, layoutDirection) {
+//                    case (.vertical,   .leftToRight): location.x += newValue
+//                    case (.vertical,   .rightToLeft): location.x -= newValue
+//                    case (.horizontal, .leftToRight): location.y += newValue
+//                    case (.horizontal, .rightToLeft): location.y += newValue
+//                    @unknown default: ()
+//                }
+//            }
         }
         
         public var relativeY: CGFloat {
-            get {
+//            get {
                 switch (scrollDirection, layoutDirection) {
                     case (.vertical,   .leftToRight): return location.y - origin.y
                     case (.vertical,   .rightToLeft): return location.y - origin.y
@@ -79,16 +79,36 @@ internal extension NSCollectionViewLayout {
                     case (.horizontal, .rightToLeft): return origin.x - location.x
                     @unknown default: return .nan
                 }
+//            }
+//
+//            set {
+//                switch (scrollDirection, layoutDirection) {
+//                    case (.vertical,   .leftToRight): location.y += newValue
+//                    case (.vertical,   .rightToLeft): location.y += newValue
+//                    case (.horizontal, .leftToRight): location.x += newValue
+//                    case (.horizontal, .rightToLeft): location.x -= newValue
+//                    @unknown default: ()
+//                }
+//            }
+        }
+        
+        public mutating func addToRelativeX(by value: CGFloat) {
+            switch (scrollDirection, layoutDirection) {
+                case (.vertical,   .leftToRight): location.x += value
+                case (.vertical,   .rightToLeft): location.x -= value
+                case (.horizontal, .leftToRight): location.y += value
+                case (.horizontal, .rightToLeft): location.y += value
+                @unknown default: ()
             }
-            
-            set {
-                switch (scrollDirection, layoutDirection) {
-                    case (.vertical,   .leftToRight): location.y += newValue
-                    case (.vertical,   .rightToLeft): location.y += newValue
-                    case (.horizontal, .leftToRight): location.x += newValue
-                    case (.horizontal, .rightToLeft): location.x -= newValue
-                    @unknown default: ()
-                }
+        }
+        
+        public mutating func addToRelativeY(by value: CGFloat) {
+            switch (scrollDirection, layoutDirection) {
+                case (.vertical,   .leftToRight): location.y += value
+                case (.vertical,   .rightToLeft): location.y += value
+                case (.horizontal, .leftToRight): location.x += value
+                case (.horizontal, .rightToLeft): location.x -= value
+                @unknown default: ()
             }
         }
         
@@ -170,20 +190,20 @@ internal extension NSCollectionViewLayout {
         
         public mutating func shiftRelativeX(with inset: NSEdgeInsets) {
             switch (scrollDirection, layoutDirection) {
-                case (.vertical,   .leftToRight): relativeX += inset.left
-                case (.vertical,   .rightToLeft): relativeX += inset.right
-                case (.horizontal, .leftToRight): relativeX += inset.top
-                case (.horizontal, .rightToLeft): relativeX += inset.top
+                case (.vertical,   .leftToRight): addToRelativeX(by: inset.left)
+                case (.vertical,   .rightToLeft): addToRelativeX(by: inset.right)
+                case (.horizontal, .leftToRight): addToRelativeX(by: inset.top)
+                case (.horizontal, .rightToLeft): addToRelativeX(by: inset.top)
                 @unknown default: ()
             }
         }
         
         public mutating func shiftRelativeY(with inset: NSEdgeInsets) {
             switch (scrollDirection, layoutDirection) {
-                case (.vertical,   .leftToRight): relativeY += inset.top
-                case (.vertical,   .rightToLeft): relativeY += inset.top
-                case (.horizontal, .leftToRight): relativeY += inset.left
-                case (.horizontal, .rightToLeft): relativeY += inset.right
+                case (.vertical,   .leftToRight): addToRelativeY(by: inset.top)
+                case (.vertical,   .rightToLeft): addToRelativeY(by: inset.top)
+                case (.horizontal, .leftToRight): addToRelativeY(by: inset.left)
+                case (.horizontal, .rightToLeft): addToRelativeY(by: inset.right)
                 @unknown default: ()
             }
         }

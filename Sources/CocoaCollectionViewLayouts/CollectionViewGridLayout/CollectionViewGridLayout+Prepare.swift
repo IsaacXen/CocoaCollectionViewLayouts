@@ -80,8 +80,8 @@ internal extension CollectionViewGridLayout {
             }
         }
         
-        tracker.relativeX = dSize.width
-        tracker.relativeY = dSize.height
+        tracker.addToRelativeX(by: dSize.width)
+        tracker.addToRelativeY(by: dSize.height)
         
         return tracker
     }
@@ -112,7 +112,7 @@ internal extension CollectionViewGridLayout {
         
         _headerCaches[section] = attributes
         
-        tracker.relativeY += h
+        tracker.addToRelativeY(by: h)
         
         return tracker
     }
