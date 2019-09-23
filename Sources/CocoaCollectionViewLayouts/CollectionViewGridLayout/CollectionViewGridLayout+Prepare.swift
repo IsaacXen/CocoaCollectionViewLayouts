@@ -51,48 +51,37 @@ internal extension CollectionViewGridLayout {
         let inset = _sectionInset(in: section) + _sectionContentInset(in: section)
         
         var tracker = tracker
+        var dSize = NSSize.zero
         
         tracker.shiftRelativeY(with: inset)
         tracker.resetRelativeX(with: inset)
         
-        var lastRow = 0
-        
-        for item in 0..<collectionView.numberOfItems(inSection: section) {
+        [Int](0..<collectionView.numberOfItems(inSection: section)).map { item -> NSCollectionViewLayoutAttributes in
             let indexPath = IndexPath(item: item, section: section)
             
             let mCol = CGFloat(item % colCount)
-//            let col = CGFloat((item + 1) % colCount)
+            let mRow = CGFloat(item / colCount)
             
-            let mRow = item / colCount
-//            let row = CGFloat((item + 1) / colCount)
+            let dx = mCol * (itemSize.width + itemSpacing) + tracker.absoluteXCompensation(with: itemSize)
+            let dy = mRow * (itemSize.height + lineSpacing) + tracker.absoluteYCompensation(with: itemSize)
             
-            /*     col 3   row
-             0 ->  0 1     0 0
-             1 ->  1 2     0 0
-             2 ->  2 0     0 1
-             3 ->  0 1     1 1
-             4 ->  1 2     1 1
-             */
+            let x = tracker.relativeX + dx
+            let y = tracker.relativeY + dy
             
-            if mRow != lastRow {
-                tracker.relativeY += tracker.relativeHeight(of: itemSize)
-                tracker.relativeY += lineSpacing
-                
-                tracker.resetRelativeX(with: inset)
-                lastRow = mRow
-            }
-            
-            let dx = itemSize.width + itemSpacing + tracker.absoluteXCompensation(with: itemSize)
-            tracker.relativeX += dx
-            
-            let x = tracker.absoluteX
-            let y = tracker.absoluteY
+            dSize = NSMakeSize(x, y)
             
             let attributes = NSCollectionViewLayoutAttributes(forItemWith: indexPath)
-            attributes.frame = NSRect(x: x, y: y, width: itemSize.width, height: itemSize.height)
+            attributes.frame = NSMakeRect(x, y, itemSize.width, itemSize.height)
             
-            _itemCaches[indexPath] = attributes
+            return attributes
+        }.forEach {
+            if let indexPath = $0.indexPath {
+                _itemCaches[indexPath] = $0
+            }
         }
+        
+        tracker.relativeX = dSize.width
+        tracker.relativeY = dSize.height
         
         return tracker
     }
