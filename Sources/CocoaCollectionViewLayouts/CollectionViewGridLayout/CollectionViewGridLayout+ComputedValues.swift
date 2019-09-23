@@ -77,7 +77,7 @@ internal extension CollectionViewGridLayout {
     }
     
     func _availableWidth(in section: Int) -> CGFloat {
-        guard let collectionView = collectionView else { return 0 }
+//        guard let collectionView = collectionView else { return 0 }
 
         let contentWidth = _contentWidth(in: section)
         let maxWidth = _maximumSectionWidth(in: section)
@@ -90,8 +90,10 @@ internal extension CollectionViewGridLayout {
     }
     
     func _itemSize(in section: Int) -> NSSize {
-        let availableWidth = _availableWidth(in: section)
         let columns = _numberOfColumns(in: section)
+        let itemGap = _interItemSpacing(in: section)
+        let gaps = max(0, CGFloat(columns)) * itemGap
+        let availableWidth = _availableWidth(in: section) - gaps
         let minItemSize = _minimumItemSize(in: section)
         
         let w = columns == 0 ? minItemSize.width : availableWidth / CGFloat(columns)
