@@ -6,43 +6,42 @@ internal extension CollectionViewGridLayout {
     
     func _minimumItemSize(in section: Int) -> NSSize {
         let delegate = collectionView?.delegate as? CollectionViewDelegateGridLayout
-        return delegate?.collectionView?(collectionView!, layout: self, minimumItemSizeInSection: section) ?? minimumItemSize
-    }
-    
-    func _minimumItemWidth(in section: Int) -> CGFloat {
-        if scrollDirection == .horizontal {
-            return _minimumItemSize(in: section).height
-        } else {
-            return _minimumItemSize(in: section).width
+        let size = delegate?.collectionView?(collectionView!, layout: self, minimumItemSizeForItemsInSection: section) ?? minimumItemSize
+        
+        if size.width <= 0 || size.height <= 0 {
+            return NSSize(width: 50, height: 50)
         }
-    }
-    
-    func _minimumItemHeight(in section: Int) -> CGFloat {
-        if scrollDirection == .horizontal {
-            return _minimumItemSize(in: section).width
-        } else {
-            return _minimumItemSize(in: section).height
-        }
+        
+        return size
     }
     
     func _itemGrowDirection(in section: Int) -> CollectionViewGridLayout.GrowDirection {
         let delegate = collectionView?.delegate as? CollectionViewDelegateGridLayout
-        return delegate?.collectionView?(collectionView!, layout: self, itemGrowDirectionInSection: section) ?? itemGrowDirection
+        return delegate?.collectionView?(collectionView!, layout: self, growDirectionForItemsInSection: section) ?? itemGrowDirection
     }
     
     func _interItemSpacing(in section: Int) -> CGFloat {
         let delegate = collectionView?.delegate as? CollectionViewDelegateGridLayout
-        return delegate?.collectionView?(collectionView!, layout: self, interItemSpacingInSection: section) ?? interItemSpacing
+        let spacing = delegate?.collectionView?(collectionView!, layout: self, interItemSpacingForSection: section) ?? interItemSpacing
+        return max(0, spacing)
     }
     
     func _lineSpacing(in section: Int) -> CGFloat {
         let delegate = collectionView?.delegate as? CollectionViewDelegateGridLayout
-        return delegate?.collectionView?(collectionView!, layout: self, lineSpacingInSection: section) ?? lineSpacing
+        let spacing = delegate?.collectionView?(collectionView!, layout: self, lineSpacingForSection: section) ?? lineSpacing
+        return max(0, spacing)
     }
     
     func _sectionInset(in section: Int) -> NSEdgeInsets {
         let delegate = collectionView?.delegate as? CollectionViewDelegateGridLayout
-        return delegate?.collectionView?(collectionView!, layout: self, insetForSection: section) ?? sectionInset
+        var inset = delegate?.collectionView?(collectionView!, layout: self, insetForSection: section) ?? sectionInset
+        
+        inset.top = max(0, inset.top)
+        inset.left = max(0, inset.left)
+        inset.right = max(0, inset.right)
+        inset.bottom = max(0, inset.bottom)
+        
+        return inset
     }
     
     func _maxNumberOfColumns(in section: Int) -> Int {
@@ -52,39 +51,38 @@ internal extension CollectionViewGridLayout {
     
     func _maximumSectionWidth(in section: Int) -> CGFloat {
         let delegate = collectionView?.delegate as? CollectionViewDelegateGridLayout
-        return delegate?.collectionView?(collectionView!, layout: self, maximumWidthForSection: section) ?? maximumSectionWidth
+        let maxWidth = delegate?.collectionView?(collectionView!, layout: self, maximumWidthInSection: section) ?? maximumSectionWidth
+        return maxWidth > 0 ? maxWidth : .greatestFiniteMagnitude
     }
     
     func _headerReferenceSize(in section: Int) -> NSSize {
         let delegate = collectionView?.delegate as? CollectionViewDelegateGridLayout
-        return delegate?.collectionView?(collectionView!, layout: self, headerReferenceSizeInSection: section) ?? headerReferenceSize
-    }
-    
-    func _headerReferenceHeight(in section: Int, scrollDirection: NSCollectionView.ScrollDirection) -> CGFloat {
-        let size = _headerReferenceSize(in: section)
-        return scrollDirection == .vertical ? size.height : size.width
+        return delegate?.collectionView?(collectionView!, layout: self, referenceSizeForHeaderInSection: section) ?? headerReferenceSize
     }
     
     func _footerReferenceSize(in section: Int) -> NSSize {
         let delegate = collectionView?.delegate as? CollectionViewDelegateGridLayout
-        return delegate?.collectionView?(collectionView!, layout: self, footerReferenceSizeInSection: section) ?? footerReferenceSize
+        return delegate?.collectionView?(collectionView!, layout: self, referenceSizeForFooterInSection: section) ?? footerReferenceSize
     }
     
-    func _footerReferenceHeight(in section: Int, scrollDirection: NSCollectionView.ScrollDirection) -> CGFloat {
-        let size = _footerReferenceSize(in: section)
-        return scrollDirection == .vertical ? size.height : size.width
+    // MARK: -
+    
+    var _visibleWidth: CGFloat {
+        guard let collectionView = collectionView else { return 0 }
+        return scrollDirection == .vertical ? collectionView.visibleRect.width : collectionView.visibleRect.height
+    }
+    
+    func _contentWidth(in section: Int) -> CGFloat {
+        return scrollDirection == .vertical ? _visibleWidth - _sectionInset(in: section).horizontal : _visibleWidth - _sectionInset(in: section).vertical
     }
     
     func _availableWidth(in section: Int) -> CGFloat {
         guard let collectionView = collectionView else { return 0 }
-        
+
+        let contentWidth = _contentWidth(in: section)
         let maxWidth = _maximumSectionWidth(in: section)
         
-        if scrollDirection == .vertical {
-            return maxWidth > 0 ? min(collectionView.visibleRect.width, maxWidth) : collectionView.visibleRect.width
-        } else {
-            return maxWidth > 0 ? min(collectionView.visibleRect.height, maxWidth) : collectionView.visibleRect.height
-        }
+        return min(contentWidth, maxWidth)
     }
     
     var _layoutDirection: NSUserInterfaceLayoutDirection {
@@ -92,47 +90,39 @@ internal extension CollectionViewGridLayout {
     }
     
     func _itemSize(in section: Int) -> NSSize {
-        var availableWidth = _availableWidth(in: section) - _computedsectionInset(in: section, scrollDirection: scrollDirection, counter: true)
+        let availableWidth = _availableWidth(in: section)
         let columns = _numberOfColumns(in: section)
-        let maxWidth = _maximumSectionWidth(in: section)
+        let minItemSize = _minimumItemSize(in: section)
         
-        if maxWidth > 0 {
-            availableWidth = min(maxWidth, availableWidth)
+        let w = columns == 0 ? minItemSize.width : availableWidth / CGFloat(columns)
+        let h: CGFloat
+        
+        if _itemGrowDirection(in: section) == .bothDirection {
+            let ratio = minItemSize.height / minItemSize.width
+            h = w * ratio
+        } else {
+            h = minItemSize.height
         }
         
-        availableWidth -= CGFloat(max(0, columns - 1)) * interItemSpacing
-        
-        let w = columns == 0 ? minimumItemSize.width : availableWidth / CGFloat(columns)
-        
-        let h = _itemGrowDirection(in: section) == .bothDirection ? w * _minimumItemHeight(in: section) / _minimumItemWidth(in: section) : _minimumItemHeight(in: section)
         return NSSize(width: w, height: h)
     }
     
     func _numberOfColumns(in section: Int) -> Int {
-        var availableWidth = _availableWidth(in: section) - _computedsectionInset(in: section, scrollDirection: scrollDirection, counter: true)
-        let itemSize = _minimumItemSize(in: section)
-        let maxColumnsCount = _maxNumberOfColumns(in: section)
+        var availableWidth = _availableWidth(in: section)
+        let minItemWidth = scrollDirection == .vertical ? _minimumItemSize(in: section).width : _minimumItemSize(in: section).height
+        let itemGap = _interItemSpacing(in: section)
+        let maxColumns = _maxNumberOfColumns(in: section)
         
-        let minItemWidth: CGFloat
-        if scrollDirection == .vertical {
-            guard availableWidth >= itemSize.width else {
-                NSLog("The collection view width must greater than the minumum item width plus both left and right section inset in section \(section)!")
-                return 0
-            }
-            minItemWidth = itemSize.width
-        } else {
-            guard availableWidth >= itemSize.height else {
-                NSLog("The collection view height must greater than the minumum item height plus both top and bottom section inset in section \(section)!")
-                return 0
-            }
-            minItemWidth = itemSize.height
+        guard availableWidth >= minItemWidth else {
+            NSLog("The collection view's width (in vertically scrolling layout) or height (in horizontally scrolling layout) must greater than the minumum item width (or height) plus both left (or top) and right (or bottom) section inset!")
+            return 0
         }
         
         availableWidth -= minItemWidth
         
-        let columns = Int(availableWidth / (minItemWidth + _interItemSpacing(in: section))) + 1
+        let columns = Int(availableWidth / (minItemWidth + itemGap)) + 1
         
-        return maxColumnsCount > 0 ? min(maxColumnsCount, columns) : columns
+        return maxColumns > 0 ? min(maxColumns, columns) : columns
     }
     
     func _numberOfRows(in section: Int) -> Int {
@@ -143,35 +133,19 @@ internal extension CollectionViewGridLayout {
         let columns = _numberOfColumns(in: section)
         return columns == 0 ? 0 : Int(ceil(CGFloat(itemsCount) / CGFloat(columns)))
     }
-    
-    func _itemsContentHeight(in section: Int) -> CGFloat {
-        let itemSize = _itemSize(in: section)
-        let lineSpacing = _lineSpacing(in: section)
-        let itemHeight = scrollDirection == .vertical ? itemSize.height : itemSize.width
-        let rows = CGFloat(_numberOfRows(in: section))
+
+    func _sectionContentInset(in section: Int) -> NSEdgeInsets {
+        let availableWidth = _availableWidth(in: section)
+        let contentWidth = _contentWidth(in: section)
         
-        return itemHeight * rows + max(0, rows - 1) * lineSpacing
-    }
-    
-    func _computedsectionInset(in section: Int, scrollDirection: NSCollectionView.ScrollDirection, counter: Bool = false) -> CGFloat {
-        let inset = _sectionInset(in: section)
+        let inset = (availableWidth - contentWidth) / 2
         
-        switch (counter, scrollDirection) {
-        case (false, .vertical), (true, .horizontal):
-            return inset.top + inset.bottom
-        default:
-            return inset.left + inset.right
+        switch scrollDirection {
+            case .horizontal:
+                return NSEdgeInsets(top: inset, left: 0, bottom: inset, right: 0)
+            default:
+                return NSEdgeInsets(top: 0, left: inset, bottom: 0, right: inset)
         }
-        
-    }
-    
-    func _leadingOffset(in section: Int) -> CGFloat {
-        guard let collectionView = collectionView else { return 0 }
-        let visibleWidth = scrollDirection == .vertical ? collectionView.visibleRect.width : collectionView.visibleRect.height
-        let inset = _layoutDirection == .leftToRight ? _sectionInset(in: section).left : _sectionInset(in: section).right
-        let dw = visibleWidth - _availableWidth(in: section)
-        
-        return dw / 2 + inset
     }
     
 }

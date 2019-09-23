@@ -2,92 +2,71 @@ import AppKit
 
 internal extension CollectionViewGridLayout {
     
-    /// Calculate the content size needed to fit all items.
-    func _prepareContentSize() {
-        guard let collectionView = collectionView else { return }
+    /// Calculate the content size needed to fit all items, headers and footers.
+    func _prepareContentSize() -> NSSize {
+        guard let collectionView = collectionView else { return .zero }
         
-        var sizeTracker = NSCollectionViewLayout._Tracker(originInRect: .zero, scrollDirection: scrollDirection, layoutDirection: .leftToRight)
+        var size: NSSize = .zero
         
-        for section in 0..<collectionView.numberOfSections {
-            // header height
-            sizeTracker.advance(inScrollDirectionBy: _headerReferenceHeight(in: section, scrollDirection: scrollDirection))
-            // footer height
-            sizeTracker.advance(inScrollDirectionBy: _footerReferenceHeight(in: section, scrollDirection: scrollDirection))
-            // items height
-            sizeTracker.advance(inScrollDirectionBy: _itemsContentHeight(in: section) + _computedsectionInset(in: section, scrollDirection: scrollDirection))
+        switch scrollDirection {
+            case .vertical:
+                size.width = collectionView.visibleRect.width
+
+                size.height = Array(0..<collectionView.numberOfSections).reduce(0, {
+                    let rows = CGFloat(_numberOfRows(in: $1))
+                    return $0 + _headerReferenceSize(in: $1).height
+                        + _footerReferenceSize(in: $1).height
+                        + _sectionInset(in: $1).vertical
+                        + rows * _itemSize(in: $1).height
+                        + max(0, rows - 1) * _lineSpacing(in: $1)
+                })
+            
+            case .horizontal:
+                size.width = Array(0..<collectionView.numberOfSections).reduce(0, {
+                    let rows = CGFloat(_numberOfRows(in: $1))
+                    return $0 + _headerReferenceSize(in: $1).width
+                        + _footerReferenceSize(in: $1).width
+                        + _sectionInset(in: $1).horizontal
+                        + rows * _itemSize(in: $1).width
+                        + max(0, rows - 1) * _lineSpacing(in: $1)
+                })
+                    
+                size.height = collectionView.visibleRect.height
+            
+            @unknown default: ()
         }
         
-        let visibleContentSize = collectionView.visibleRect.size
-        let contentWidth = scrollDirection == .vertical ? visibleContentSize.width : visibleContentSize.height
-        sizeTracker.advance(inCounterScrollDirectionBy: contentWidth)
-        
-        _contentSize.width = sizeTracker.location.x
-        _contentSize.height = sizeTracker.location.y
-        
-        print(_contentSize, _numberOfColumns(in: 0), _numberOfRows(in: 0), _itemSize(in: 0))
+        return size
     }
     
-    func _prepareTracker() -> NSCollectionViewLayout._Tracker {
-        return .init(originInRect: NSRect(origin: .zero, size: _contentSize), scrollDirection: scrollDirection, layoutDirection: _layoutDirection)
-    }
-    
-    func _prepareItems(in section: Int, tracker: NSCollectionViewLayout._Tracker) -> NSCollectionViewLayout._Tracker {
+    func _prepareItems(in section: Int, tracker: NSCollectionViewLayout._ODSTracker) -> NSCollectionViewLayout._ODSTracker {
         guard let collectionView = collectionView else { return tracker }
         
+        let colCount = _numberOfColumns(in: section)
+        let rowCount = _numberOfRows(in: section)
         let itemSize = _itemSize(in: section)
-        let columns = _numberOfColumns(in: section)
-        let rows = _numberOfRows(in: section)
-        let interItemSpacing = _interItemSpacing(in: section)
-        let lineSpacing = _lineSpacing(in: section)
-        let leadingOffset = _leadingOffset(in: section)
-        let topInset = _sectionInset(in: section).top
-        
-        let rtlOffset = _layoutDirection == .rightToLeft ? itemSize.width : 0
-        
-        guard columns > 0, rows > 0 else { return tracker }
-        
-        Array(0..<collectionView.numberOfItems(inSection: section)).forEach { item in
-            let indexPath = IndexPath(item: item, section: section)
-            let attributes = NSCollectionViewLayoutAttributes(forItemWith: indexPath)
-            
-            var c = item % columns
-            var r = Int(ceil(CGFloat(item + 1) / CGFloat(columns)))
-
-            if scrollDirection == .horizontal {
-                (c, r) = (r, c)
-                c = max(0, c - 1)
-                r = r + 1
-            }
-
-            let dx: CGFloat
-            let dy: CGFloat
-            
-            if scrollDirection == .horizontal {
-                dx = CGFloat(max(0, c)) * (itemSize.width + lineSpacing)
-                dy = CGFloat(max(0, r - 1)) * (itemSize.height + interItemSpacing)
-            } else {
-                dx = CGFloat(max(0, c)) * (itemSize.width + interItemSpacing)
-                dy = CGFloat(max(0, r - 1)) * (itemSize.height + lineSpacing)
-            }
-            
-            let x: CGFloat
-            let y: CGFloat
-            
-            if _layoutDirection == .rightToLeft && scrollDirection == .horizontal {
-                x = tracker.advancing(inScrollDirectionBy: dx + leadingOffset + rtlOffset)
-                y = tracker.advancing(inCounterScrollDirectionBy: dy + topInset)
-            } else {
-                x = tracker.advancing(inCounterScrollDirectionBy: dx + leadingOffset + rtlOffset)
-                y = tracker.advancing(inScrollDirectionBy: dy + topInset)
-            }
-            
-            attributes.frame = NSMakeRect(x, y, itemSize.width, itemSize.height)
-            
-            _caches[indexPath] = attributes
-        }
+        let inset = _sectionInset(in: section) + _sectionContentInset(in: section)
         
         var tracker = tracker
-        tracker.advance(inScrollDirectionBy: _itemsContentHeight(in: section))
+        
+        tracker.shiftRelativeY(with: inset)
+        tracker.resetRelativeX(with: inset)
+        
+        var lastRow = 0
+        
+        for item in 1...collectionView.numberOfItems(inSection: section) {
+            let col = item % colCount
+            let row = item / rowCount
+            
+            if {
+                tracker.relativeY += tracker.relativeHeight(of: itemSize)
+                tracker.relativeY += lineSpacing
+                tracker.resetRelativeX(with: inset)
+            }
+            
+            
+        }
+        
         return tracker
     }
     
