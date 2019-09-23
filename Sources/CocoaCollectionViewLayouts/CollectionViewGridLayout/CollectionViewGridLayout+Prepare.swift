@@ -41,7 +41,10 @@ internal extension CollectionViewGridLayout {
     
     func _prepareItems(in section: Int, tracker: NSCollectionViewLayout._ODSTracker) -> NSCollectionViewLayout._ODSTracker {
         guard let collectionView = collectionView else { return tracker }
-                        
+                    
+        let itemSpacing = _interItemSpacing(in: section)
+        let lineSpacing = _lineSpacing(in: section)
+        
         let colCount = _numberOfColumns(in: section)
 //        let rowCount = _numberOfRows(in: section)
         let itemSize = _itemSize(in: section)
@@ -74,11 +77,12 @@ internal extension CollectionViewGridLayout {
             if mRow != lastRow {
                 tracker.relativeY += tracker.relativeHeight(of: itemSize)
                 tracker.relativeY += lineSpacing
+                
                 tracker.resetRelativeX(with: inset)
                 lastRow = mRow
             }
             
-            let dx = mCol * (itemSize.width + interItemSpacing) + tracker.absoluteXCompensation(with: itemSize)
+            let dx = itemSize.width + itemSpacing + tracker.absoluteXCompensation(with: itemSize)
             tracker.relativeX += dx
             
             let x = tracker.absoluteX
