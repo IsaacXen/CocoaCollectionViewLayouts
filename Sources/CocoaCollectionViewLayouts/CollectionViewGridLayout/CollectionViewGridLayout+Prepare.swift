@@ -43,7 +43,7 @@ internal extension CollectionViewGridLayout {
         guard let collectionView = collectionView else { return tracker }
                         
         let colCount = _numberOfColumns(in: section)
-        let rowCount = _numberOfRows(in: section)
+//        let rowCount = _numberOfRows(in: section)
         let itemSize = _itemSize(in: section)
         let inset = _sectionInset(in: section) + _sectionContentInset(in: section)
         
@@ -52,7 +52,7 @@ internal extension CollectionViewGridLayout {
         tracker.shiftRelativeY(with: inset)
         tracker.resetRelativeX(with: inset)
         
-        var lastRow = -1
+        var lastRow = 0
         
         for item in 0..<collectionView.numberOfItems(inSection: section) {
             let indexPath = IndexPath(item: item, section: section)
@@ -60,8 +60,8 @@ internal extension CollectionViewGridLayout {
             let mCol = CGFloat(item % colCount)
 //            let col = CGFloat((item + 1) % colCount)
             
-            let mRow = item / rowCount
-//            let row = CGFloat((item + 1) / rowCount)
+            let mRow = item / colCount
+//            let row = CGFloat((item + 1) / colCount)
             
             /*     col 3   row
              0 ->  0 1     0 0
