@@ -86,7 +86,34 @@ internal extension CollectionViewGridLayout {
         return tracker
     }
     
-    func _prepareSectionHeader(for section: Int, tracker: NSPoint) -> NSPoint {
+    func _prepareSectionHeader(for section: Int, tracker: NSCollectionViewLayout._ODSTracker) -> NSCollectionViewLayout._ODSTracker {
+        let size = _headerReferenceSize(in: section)
+        let headerHeight = scrollDirection == .vertical ? size.height : size.width
+        guard headerHeight >= 0 else { return tracker }
+        
+        let visibleWidth = _visibleWidth
+        
+        var tracker = tracker
+        
+        tracker.resetRelativeX()
+        
+        let x = tracker.absoluteX
+        let y = tracker.absoluteY
+        var w = visibleWidth
+        var h = headerHeight
+        
+        if scrollDirection == .vertical {
+            (w, h) = (h, w)
+        }
+        
+        let indexPath = IndexPath(item: 0, section: section)
+        let attributes = NSCollectionViewLayoutAttributes(forSupplementaryViewOfKind: NSCollectionView.elementKindSectionHeader, with: indexPath)
+        attributes.frame = NSRect(x: x, y: y, width: w, height: h)
+        
+        _headerCaches[section] = attributes
+        
+        tracker.relativeY += h
+        
         return tracker
     }
     
