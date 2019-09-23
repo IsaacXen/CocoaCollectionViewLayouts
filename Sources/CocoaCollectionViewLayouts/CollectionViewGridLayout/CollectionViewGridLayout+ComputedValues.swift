@@ -140,7 +140,7 @@ internal extension CollectionViewGridLayout {
         let availableWidth = _availableWidth(in: section)
         let contentWidth = _contentWidth(in: section)
         
-        let inset = (availableWidth - contentWidth) / 2
+        let inset = max(0, contentWidth - availableWidth) / 2
         
         switch scrollDirection {
             case .horizontal:
