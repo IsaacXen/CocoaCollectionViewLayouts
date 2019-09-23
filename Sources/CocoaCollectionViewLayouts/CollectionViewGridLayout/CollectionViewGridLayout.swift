@@ -234,7 +234,7 @@ public class CollectionViewGridLayout: NSCollectionViewLayout {
         var tracker = NSCollectionViewLayout._ODSTracker(originInRect: NSRect(origin: .zero, size: _contentSize), scrollDirection: scrollDirection, layoutDirection: _layoutDirection)
 
         for section in 0..<collectionView.numberOfSections {
-            // prepare header
+            tracker = _prepareSectionHeader(for: section, tracker: tracker)
             tracker = _prepareItems(in: section, tracker: tracker)
             // prepare footer
         }
