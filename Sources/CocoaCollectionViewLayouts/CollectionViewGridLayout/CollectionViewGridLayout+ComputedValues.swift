@@ -92,7 +92,7 @@ internal extension CollectionViewGridLayout {
     func _itemSize(in section: Int) -> NSSize {
         let columns = _numberOfColumns(in: section)
         let itemGap = _interItemSpacing(in: section)
-        let gaps = max(0, CGFloat(columns)) * itemGap
+        let gaps = max(0, CGFloat(columns - 1)) * itemGap
         let availableWidth = _availableWidth(in: section) - gaps
         let minItemSize = _minimumItemSize(in: section)
         
