@@ -41,7 +41,7 @@ internal extension CollectionViewGridLayout {
     
     func _prepareItems(in section: Int, tracker: NSCollectionViewLayout._ODSTracker) -> NSCollectionViewLayout._ODSTracker {
         guard let collectionView = collectionView else { return tracker }
-        
+                        
         let colCount = _numberOfColumns(in: section)
         let rowCount = _numberOfRows(in: section)
         let itemSize = _itemSize(in: section)
@@ -52,19 +52,42 @@ internal extension CollectionViewGridLayout {
         tracker.shiftRelativeY(with: inset)
         tracker.resetRelativeX(with: inset)
         
-        var lastRow = 0
+        var lastRow = -1
         
-        for item in 1...collectionView.numberOfItems(inSection: section) {
-            let col = item % colCount
-            let row = item / rowCount
+        for item in 0..<collectionView.numberOfItems(inSection: section) {
+            let indexPath = IndexPath(item: item, section: section)
             
-            if {
+            let mCol = CGFloat(item % colCount)
+//            let col = CGFloat((item + 1) % colCount)
+            
+            let mRow = item / rowCount
+//            let row = CGFloat((item + 1) / rowCount)
+            
+            /*     col 3   row
+             0 ->  0 1     0 0
+             1 ->  1 2     0 0
+             2 ->  2 0     0 1
+             3 ->  0 1     1 1
+             4 ->  1 2     1 1
+             */
+            
+            if mRow != lastRow {
                 tracker.relativeY += tracker.relativeHeight(of: itemSize)
                 tracker.relativeY += lineSpacing
                 tracker.resetRelativeX(with: inset)
+                lastRow = mRow
             }
             
+            let dx = mCol * (itemSize.width + interItemSpacing) + tracker.absoluteXCompensation(with: itemSize)
+            tracker.relativeX += dx
             
+            let x = tracker.absoluteX
+            let y = tracker.absoluteY
+            
+            let attributes = NSCollectionViewLayoutAttributes(forItemWith: indexPath)
+            attributes.frame = NSRect(x: x, y: y, width: itemSize.width, height: itemSize.height)
+            
+            _itemCaches[indexPath] = attributes
         }
         
         return tracker
