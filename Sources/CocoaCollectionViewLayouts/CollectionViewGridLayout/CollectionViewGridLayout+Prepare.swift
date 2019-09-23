@@ -102,7 +102,7 @@ internal extension CollectionViewGridLayout {
         var w = visibleWidth
         var h = headerHeight
         
-        if scrollDirection == .vertical {
+        if scrollDirection == .horizontal {
             (w, h) = (h, w)
         }
         
