@@ -46,12 +46,12 @@ internal extension CollectionViewGridLayout {
         let lineSpacing = _lineSpacing(in: section)
         
         let colCount = _numberOfColumns(in: section)
-//        let rowCount = _numberOfRows(in: section)
+        let rowCount = _numberOfRows(in: section)
         let itemSize = _itemSize(in: section)
         let inset = _sectionInset(in: section) + _sectionContentInset(in: section)
         
         var tracker = tracker
-        var dSize = NSSize.zero
+//        var dSize = NSSize.zero
         
         tracker.shiftRelativeY(with: inset)
         tracker.resetRelativeX(with: inset)
@@ -68,7 +68,7 @@ internal extension CollectionViewGridLayout {
             let x = tracker.relativeX + dx
             let y = tracker.relativeY + dy
             
-            dSize = NSMakeSize(x, y)
+//            dSize = NSMakeSize(x, y)
             
             let attributes = NSCollectionViewLayoutAttributes(forItemWith: indexPath)
             attributes.frame = NSMakeRect(x, y, itemSize.width, itemSize.height)
@@ -80,10 +80,10 @@ internal extension CollectionViewGridLayout {
             }
         }
         
-        tracker.addToRelativeX(by: dSize.width)
-        tracker.addToRelativeY(by: dSize.height)
+        let itemHeight = scrollDirection == .vertical ? itemSize.height : itemSize.width
+        let contentHeight = CGFloat(rowCount) * itemHeight + CGFloat(max(0, rowCount - 1)) * lineSpacing
         
-        tracker.addToRelativeY(by: inset.bottom)
+        tracker.addToRelativeY(by: contentHeight + inset.bottom)
         
         return tracker
     }
