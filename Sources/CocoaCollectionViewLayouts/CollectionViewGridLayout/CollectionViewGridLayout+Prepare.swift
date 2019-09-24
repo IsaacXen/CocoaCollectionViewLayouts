@@ -83,6 +83,8 @@ internal extension CollectionViewGridLayout {
         tracker.addToRelativeX(by: dSize.width)
         tracker.addToRelativeY(by: dSize.height)
         
+        tracker.addToRelativeY(by: inset.bottom)
+        
         return tracker
     }
     
