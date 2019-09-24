@@ -229,9 +229,9 @@ public class CollectionViewGridLayout: NSCollectionViewLayout {
     public override func prepare() {
         guard let collectionView = collectionView else { return }
         
-        _footerCaches = []
-        _headerCaches = []
-        _itemCaches = []
+        _footerCaches.removeAll()
+        _headerCaches.removeAll()
+        _itemCaches.removeAll()
         
         _contentSize = _prepareContentSize()
         
