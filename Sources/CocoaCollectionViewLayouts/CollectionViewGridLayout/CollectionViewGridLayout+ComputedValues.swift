@@ -120,7 +120,6 @@ internal extension CollectionViewGridLayout {
         let maxColumns = _maxNumberOfColumns(in: section)
         
         guard availableWidth >= minItemWidth else {
-            NSLog("The collection view's width (in vertically scrolling layout) or height (in horizontally scrolling layout) must greater than the minumum item width (or height) plus both left (or top) and right (or bottom) section inset!")
             return 0
         }
         
