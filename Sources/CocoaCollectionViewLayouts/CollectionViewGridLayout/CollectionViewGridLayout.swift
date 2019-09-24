@@ -236,11 +236,9 @@ public class CollectionViewGridLayout: NSCollectionViewLayout {
         for section in 0..<collectionView.numberOfSections {
             tracker = _prepareSectionHeader(for: section, tracker: tracker)
             tracker = _prepareItems(in: section, tracker: tracker)
-            // prepare footer
+            tracker = _prepareSectionFooter(for: section, tracker: tracker)
         }
-        
-//        _updateLayoutAttributesForRightToLeftLayoutIfNeeded()
-        
+                
     }
     
     public override func layoutAttributesForElements(in rect: NSRect) -> [NSCollectionViewLayoutAttributes] {
@@ -281,4 +279,6 @@ public class CollectionViewGridLayout: NSCollectionViewLayout {
     }
     
     // TODO: Animating item changes like ibooks maybe?
+    
+    
 }

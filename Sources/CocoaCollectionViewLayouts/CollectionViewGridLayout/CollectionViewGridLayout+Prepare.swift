@@ -117,14 +117,35 @@ internal extension CollectionViewGridLayout {
         return tracker
     }
     
-    func _prepareSectionFooter(for section: Int, tracker: NSPoint) -> NSPoint {
-        return tracker
-    }
-    
-    func _updateLayoutAttributesForRightToLeftLayoutIfNeeded() {
-        guard _layoutDirection == .rightToLeft else { return }
-        // && scrollDirection == .horizontal
+    func _prepareSectionFooter(for section: Int, tracker: NSCollectionViewLayout._ODSTracker) -> NSCollectionViewLayout._ODSTracker {
+        let size = _footerReferenceSize(in: section)
+        let footerHeight = scrollDirection == .vertical ? size.height : size.width
+        guard footerHeight >= 0 else { return tracker }
         
+        let visibleWidth = _visibleWidth
+        
+        var tracker = tracker
+        
+        tracker.resetRelativeX()
+        
+        let x = tracker.absoluteX
+        let y = tracker.absoluteY
+        var w = visibleWidth
+        var h = footerHeight
+        
+        if scrollDirection == .horizontal {
+            (w, h) = (h, w)
+        }
+        
+        let indexPath = IndexPath(item: 0, section: section)
+        let attributes = NSCollectionViewLayoutAttributes(forSupplementaryViewOfKind: NSCollectionView.elementKindSectionHeader, with: indexPath)
+        attributes.frame = NSRect(x: x, y: y, width: w, height: h)
+        
+        _footerCaches[section] = attributes
+        
+        tracker.addToRelativeY(by: h)
+        
+        return tracker
     }
     
 }
