@@ -11,6 +11,8 @@ internal extension NSCollectionViewLayout {
         ///
         private(set) var location: NSPoint
         
+        private var savedLocation: NSPoint?
+        
         ///
         public let scrollDirection: NSCollectionView.ScrollDirection
         
@@ -207,8 +209,17 @@ internal extension NSCollectionViewLayout {
                 @unknown default: ()
             }
         }
+        
+        public mutating func save() {
+            savedLocation = location
+        }
+        
+        public mutating func load() {
+            if let savedLocation = savedLocation {
+                location = savedLocation
+            }
+        }
     }
-
 }
 
 

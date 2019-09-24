@@ -48,6 +48,8 @@ internal extension CollectionViewGridLayout {
         let colCount = _numberOfColumns(in: section)
         let rowCount = _numberOfRows(in: section)
         let itemSize = _itemSize(in: section)
+        let itemWidth = scrollDirection == .vertical ? itemSize.width : itemSize.height
+        let itemHeight = scrollDirection == .vertical ? itemSize.height : itemSize.width
         let inset = _sectionInset(in: section) + _sectionContentInset(in: section)
         
         guard colCount > 0 else { return tracker }
@@ -57,18 +59,25 @@ internal extension CollectionViewGridLayout {
         tracker.shiftRelativeY(with: inset)
         tracker.resetRelativeX(with: inset)
         
+        tracker.save()
+        
         [Int](0..<collectionView.numberOfItems(inSection: section)).map { item -> NSCollectionViewLayoutAttributes in
             let indexPath = IndexPath(item: item, section: section)
             
             let mCol = CGFloat(item % colCount)
             let mRow = CGFloat(item / colCount)
             
-            let dx = mCol * (itemSize.width + itemSpacing) + tracker.absoluteXCompensation(with: itemSize)
-            let dy = mRow * (itemSize.height + lineSpacing) + tracker.absoluteYCompensation(with: itemSize)
+            let dx = mCol * (itemWidth + itemSpacing)
+            let dy = mRow * (itemHeight + lineSpacing)
+
+            tracker.addToRelativeX(by: dx)
+            tracker.addToRelativeY(by: dy)
             
-            let x = tracker.relativeX + dx
-            let y = tracker.relativeY + dy
-                        
+            let x = tracker.absoluteX + tracker.absoluteXCompensation(with: itemSize)
+            let y = tracker.absoluteY + tracker.absoluteYCompensation(with: itemSize)
+            
+            tracker.load()
+            
             let attributes = NSCollectionViewLayoutAttributes(forItemWith: indexPath)
             attributes.frame = NSMakeRect(x, y, itemSize.width, itemSize.height)
             
@@ -79,7 +88,6 @@ internal extension CollectionViewGridLayout {
             }
         }
         
-        let itemHeight = scrollDirection == .vertical ? itemSize.height : itemSize.width
         let contentHeight = CGFloat(rowCount) * itemHeight + CGFloat(max(0, rowCount - 1)) * lineSpacing
         
         tracker.addToRelativeY(by: contentHeight + inset.bottom)
