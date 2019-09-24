@@ -113,7 +113,7 @@ internal extension CollectionViewGridLayout {
         
         _headerCaches[section] = attributes
         
-        tracker.addToRelativeY(by: h)
+        tracker.addToRelativeY(by: headerHeight)
         
         return tracker
     }
@@ -144,7 +144,7 @@ internal extension CollectionViewGridLayout {
         
         _footerCaches[section] = attributes
         
-        tracker.addToRelativeY(by: h)
+        tracker.addToRelativeY(by: footerHeight)
         
         return tracker
     }
