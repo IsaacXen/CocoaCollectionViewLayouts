@@ -50,8 +50,9 @@ internal extension CollectionViewGridLayout {
         let itemSize = _itemSize(in: section)
         let inset = _sectionInset(in: section) + _sectionContentInset(in: section)
         
+        guard colCount > 0 else { return tracker }
+        
         var tracker = tracker
-//        var dSize = NSSize.zero
         
         tracker.shiftRelativeY(with: inset)
         tracker.resetRelativeX(with: inset)
@@ -67,9 +68,7 @@ internal extension CollectionViewGridLayout {
             
             let x = tracker.relativeX + dx
             let y = tracker.relativeY + dy
-            
-//            dSize = NSMakeSize(x, y)
-            
+                        
             let attributes = NSCollectionViewLayoutAttributes(forItemWith: indexPath)
             attributes.frame = NSMakeRect(x, y, itemSize.width, itemSize.height)
             
