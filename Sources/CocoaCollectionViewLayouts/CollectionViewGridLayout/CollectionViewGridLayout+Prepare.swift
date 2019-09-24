@@ -140,7 +140,7 @@ internal extension CollectionViewGridLayout {
         }
         
         let indexPath = IndexPath(item: 0, section: section)
-        let attributes = NSCollectionViewLayoutAttributes(forSupplementaryViewOfKind: NSCollectionView.elementKindSectionHeader, with: indexPath)
+        let attributes = NSCollectionViewLayoutAttributes(forSupplementaryViewOfKind: NSCollectionView.elementKindSectionFooter, with: indexPath)
         attributes.frame = NSRect(x: x, y: y, width: w, height: h)
         
         _footerCaches[section] = attributes
