@@ -2,89 +2,164 @@ import AppKit
 
 internal extension CollectionViewGridLayout {
     
-    /// Calculate the content size needed to fit all items.
-    func _prepareContentSize() {
-        guard let collectionView = collectionView else { return }
+    /// Calculate the content size needed to fit all items, headers and footers.
+    func _prepareContentSize() -> NSSize {
+        guard let collectionView = collectionView else { return .zero }
         
-        var sizeTracker = NSCollectionViewLayout._Tracker(originInRect: .zero, scrollDirection: scrollDirection, layoutDirection: .leftToRight)
+        var size: NSSize = .zero
         
-        for section in 0..<collectionView.numberOfSections {
-            // header height
-            sizeTracker.advance(inScrollDirectionBy: _headerReferenceHeight(in: section, scrollDirection: scrollDirection))
-            // footer height
-            sizeTracker.advance(inScrollDirectionBy: _footerReferenceHeight(in: section, scrollDirection: scrollDirection))
-            // items height
-            sizeTracker.advance(inScrollDirectionBy: _itemsContentHeight(in: section) + _computedsectionInset(in: section, scrollDirection: scrollDirection))
+        switch scrollDirection {
+            case .vertical:
+                size.width = collectionView.visibleRect.width
+
+                size.height = Array(0..<collectionView.numberOfSections).reduce(0, {
+                    let rows = CGFloat(_numberOfRows(in: $1))
+                    return $0 + _headerReferenceSize(in: $1).height
+                        + _footerReferenceSize(in: $1).height
+                        + _sectionInset(in: $1).vertical
+                        + rows * _itemSize(in: $1).height
+                        + max(0, rows - 1) * _lineSpacing(in: $1)
+                })
+            
+            case .horizontal:
+                size.width = Array(0..<collectionView.numberOfSections).reduce(0, {
+                    let rows = CGFloat(_numberOfRows(in: $1))
+                    return $0 + _headerReferenceSize(in: $1).width
+                        + _footerReferenceSize(in: $1).width
+                        + _sectionInset(in: $1).horizontal
+                        + rows * _itemSize(in: $1).width
+                        + max(0, rows - 1) * _lineSpacing(in: $1)
+                })
+                    
+                size.height = collectionView.visibleRect.height
+            
+            @unknown default: ()
         }
         
-        let visibleContentSize = collectionView.visibleRect.size
-        let contentWidth = scrollDirection == .vertical ? visibleContentSize.width : visibleContentSize.height
-        sizeTracker.advance(inCounterScrollDirectionBy: contentWidth)
-        
-        _contentSize.width = sizeTracker.location.x
-        _contentSize.height = sizeTracker.location.y
-        
-        print(_contentSize, _numberOfColumns(in: 0), _numberOfRows(in: 0), _itemSize(in: 0))
+        return size
     }
     
-    func _prepareTracker() -> NSCollectionViewLayout._Tracker {
-        return .init(originInRect: NSRect(origin: .zero, size: _contentSize), scrollDirection: scrollDirection, layoutDirection: _layoutDirection)
-    }
-    
-    func _prepareItems(in section: Int, tracker: NSCollectionViewLayout._Tracker) -> NSCollectionViewLayout._Tracker {
+    func _prepareItems(in section: Int, tracker: NSCollectionViewLayout._ODSTracker) -> NSCollectionViewLayout._ODSTracker {
         guard let collectionView = collectionView else { return tracker }
-        
-        let itemSize = _itemSize(in: section)
-        let columns = _numberOfColumns(in: section)
-        let rows = _numberOfRows(in: section)
-        let interItemSpacing = _interItemSpacing(in: section)
+                    
+        let itemSpacing = _interItemSpacing(in: section)
         let lineSpacing = _lineSpacing(in: section)
-        let leadingOffset = _leadingOffset(in: section)
-        let topInset = _sectionInset(in: section).top
         
-        guard columns > 0, rows > 0 else { return tracker }
+        let colCount = _numberOfColumns(in: section)
+        let rowCount = _numberOfRows(in: section)
+        let itemSize = _itemSize(in: section)
+        let itemWidth = scrollDirection == .vertical ? itemSize.width : itemSize.height
+        let itemHeight = scrollDirection == .vertical ? itemSize.height : itemSize.width
+        let inset = _sectionInset(in: section) + _sectionContentInset(in: section)
         
-        Array(0..<collectionView.numberOfItems(inSection: section)).forEach { item in
-            let indexPath = IndexPath(item: item, section: section)
-            let attributes = NSCollectionViewLayoutAttributes(forItemWith: indexPath)
-            
-            var c = item % columns
-            var r = Int(ceil(CGFloat(item + 1) / CGFloat(columns)))
-
-            if scrollDirection == .horizontal {
-                (c, r) = (r, c)
-                c = max(0, c - 1)
-                r = r + 1
-            }
-
-            let dx = CGFloat(max(0, c)) * (itemSize.width + interItemSpacing)
-            let dy = CGFloat(max(0, r - 1)) * (itemSize.height + lineSpacing)
-            
-            let x = tracker.advancing(inCounterScrollDirectionBy: dx) + leadingOffset
-            let y = tracker.advancing(inScrollDirectionBy: dy) + topInset
-            
-            attributes.frame = NSMakeRect(x, y, itemSize.width, itemSize.height)
-            
-            _caches[indexPath] = attributes
-        }
+        guard colCount > 0 else { return tracker }
         
         var tracker = tracker
-        tracker.advance(inScrollDirectionBy: _itemsContentHeight(in: section))
-        return tracker
-    }
-    
-    func _prepareSectionHeader(for section: Int, tracker: NSPoint) -> NSPoint {
-        return tracker
-    }
-    
-    func _prepareSectionFooter(for section: Int, tracker: NSPoint) -> NSPoint {
-        return tracker
-    }
-    
-    func _updateLayoutAttributesForRightToLeftLayoutIfNeeded() {
-        guard _layoutDirection == .rightToLeft else { return }
-        // && scrollDirection == .horizontal
         
+        tracker.shiftRelativeY(with: inset)
+        tracker.resetRelativeX(with: inset)
+        
+        tracker.save()
+        
+        [Int](0..<collectionView.numberOfItems(inSection: section)).map { item -> NSCollectionViewLayoutAttributes in
+            let indexPath = IndexPath(item: item, section: section)
+            
+            let mCol = CGFloat(item % colCount)
+            let mRow = CGFloat(item / colCount)
+            
+            let dx = mCol * (itemWidth + itemSpacing)
+            let dy = mRow * (itemHeight + lineSpacing)
+
+            tracker.addToRelativeX(by: dx)
+            tracker.addToRelativeY(by: dy)
+            
+            let x = tracker.absoluteX + tracker.absoluteXCompensation(with: itemSize)
+            let y = tracker.absoluteY + tracker.absoluteYCompensation(with: itemSize)
+            
+            tracker.load()
+            
+            let attributes = NSCollectionViewLayoutAttributes(forItemWith: indexPath)
+            attributes.frame = NSMakeRect(x, y, itemSize.width, itemSize.height)
+            
+            return attributes
+        }.forEach {
+            if let indexPath = $0.indexPath {
+                _itemCaches[indexPath] = $0
+            }
+        }
+        
+        let contentHeight = CGFloat(rowCount) * itemHeight + CGFloat(max(0, rowCount - 1)) * lineSpacing
+        
+        tracker.addToRelativeY(by: contentHeight)
+        
+        let trailingInset = scrollDirection == .vertical ? inset.bottom : _layoutDirection == .leftToRight ? inset.right : inset.left
+        tracker.addToRelativeY(by: trailingInset)
+        
+        return tracker
+    }
+    
+    func _prepareSectionHeader(for section: Int, tracker: NSCollectionViewLayout._ODSTracker) -> NSCollectionViewLayout._ODSTracker {
+        let size = _headerReferenceSize(in: section)
+        let headerHeight = scrollDirection == .vertical ? size.height : size.width
+        guard headerHeight >= 0 else { return tracker }
+        
+        let visibleWidth = _visibleWidth
+        
+        var tracker = tracker
+        
+        tracker.resetRelativeX()
+        
+        var w = visibleWidth
+        var h = headerHeight
+        
+        if scrollDirection == .horizontal {
+            (w, h) = (h, w)
+        }
+        
+        let x = tracker.absoluteX + tracker.absoluteXCompensation(with: NSMakeSize(w, h))
+        let y = tracker.absoluteY + tracker.absoluteYCompensation(with: NSMakeSize(w, h))
+        
+        let indexPath = IndexPath(item: 0, section: section)
+        let attributes = NSCollectionViewLayoutAttributes(forSupplementaryViewOfKind: NSCollectionView.elementKindSectionHeader, with: indexPath)
+        attributes.frame = NSRect(x: x, y: y, width: w, height: h)
+        
+        _headerCaches[section] = attributes
+        
+        tracker.addToRelativeY(by: headerHeight)
+        
+        return tracker
+    }
+    
+    func _prepareSectionFooter(for section: Int, tracker: NSCollectionViewLayout._ODSTracker) -> NSCollectionViewLayout._ODSTracker {
+        let size = _footerReferenceSize(in: section)
+        let footerHeight = scrollDirection == .vertical ? size.height : size.width
+        guard footerHeight >= 0 else { return tracker }
+        
+        let visibleWidth = _visibleWidth
+        
+        var tracker = tracker
+        
+        tracker.resetRelativeX()
+        
+        var w = visibleWidth
+        var h = footerHeight
+        
+        if scrollDirection == .horizontal {
+            (w, h) = (h, w)
+        }
+        
+        let x = tracker.absoluteX + tracker.absoluteXCompensation(with: NSMakeSize(w, h))
+        let y = tracker.absoluteY + tracker.absoluteYCompensation(with: NSMakeSize(w, h))
+        
+        let indexPath = IndexPath(item: 0, section: section)
+        let attributes = NSCollectionViewLayoutAttributes(forSupplementaryViewOfKind: NSCollectionView.elementKindSectionFooter, with: indexPath)
+        attributes.frame = NSRect(x: x, y: y, width: w, height: h)
+        
+        _footerCaches[section] = attributes
+        
+        tracker.addToRelativeY(by: footerHeight)
+        
+        return tracker
     }
     
 }

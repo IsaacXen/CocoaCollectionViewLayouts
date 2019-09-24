@@ -378,6 +378,8 @@ public class CollectionViewFlowLayout: NSCollectionViewLayout {
                 _collectionViewContentSize.width = tracker.x
                 _collectionViewContentSize.height = collectionView.visibleRect.height
                 print(collectionViewContentSize)
+            
+            @unknown default: ()
         }
         
 //        print(collectionViewContentSize)
@@ -413,6 +415,8 @@ public class CollectionViewFlowLayout: NSCollectionViewLayout {
                 
                 // update tracker
                 tracker.x += thickness
+            
+            @unknown default: ()
         }
         
         // store to caches
