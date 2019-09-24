@@ -10,8 +10,8 @@
 - [x] max number of columns
 - [x] max section width
 - [x] mutiple sections
-- [ ] section header
-- [ ] section footer
+- [x] section header
+- [x] section footer
 - [ ] sticky header
 - [ ] sticky footer
 - [ ] drop indicator
