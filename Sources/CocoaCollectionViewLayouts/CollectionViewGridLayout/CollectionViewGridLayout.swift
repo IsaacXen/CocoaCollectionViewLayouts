@@ -229,6 +229,10 @@ public class CollectionViewGridLayout: NSCollectionViewLayout {
     public override func prepare() {
         guard let collectionView = collectionView else { return }
         
+        _footerCaches = []
+        _headerCaches = []
+        _itemCaches = []
+        
         _contentSize = _prepareContentSize()
         
         var tracker = NSCollectionViewLayout._ODSTracker(originInRect: NSRect(origin: .zero, size: _contentSize), scrollDirection: scrollDirection, layoutDirection: _layoutDirection)
