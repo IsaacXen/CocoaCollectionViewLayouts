@@ -90,7 +90,10 @@ internal extension CollectionViewGridLayout {
         
         let contentHeight = CGFloat(rowCount) * itemHeight + CGFloat(max(0, rowCount - 1)) * lineSpacing
         
-        tracker.addToRelativeY(by: contentHeight + inset.bottom)
+        tracker.addToRelativeY(by: contentHeight)
+        
+        let trailingInset = scrollDirection == .vertical ? inset.bottom : _layoutDirection == .leftToRight ? inset.right : inset.left
+        tracker.addToRelativeY(by: trailingInset)
         
         return tracker
     }
