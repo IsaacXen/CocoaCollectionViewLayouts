@@ -109,14 +109,15 @@ internal extension CollectionViewGridLayout {
         
         tracker.resetRelativeX()
         
-        let x = tracker.absoluteX
-        let y = tracker.absoluteY
         var w = visibleWidth
         var h = headerHeight
         
         if scrollDirection == .horizontal {
             (w, h) = (h, w)
         }
+        
+        let x = tracker.absoluteX + tracker.absoluteXCompensation(with: NSMakeSize(w, h))
+        let y = tracker.absoluteY + tracker.absoluteYCompensation(with: NSMakeSize(w, h))
         
         let indexPath = IndexPath(item: 0, section: section)
         let attributes = NSCollectionViewLayoutAttributes(forSupplementaryViewOfKind: NSCollectionView.elementKindSectionHeader, with: indexPath)
@@ -140,14 +141,15 @@ internal extension CollectionViewGridLayout {
         
         tracker.resetRelativeX()
         
-        let x = tracker.absoluteX
-        let y = tracker.absoluteY
         var w = visibleWidth
         var h = footerHeight
         
         if scrollDirection == .horizontal {
             (w, h) = (h, w)
         }
+        
+        let x = tracker.absoluteX + tracker.absoluteXCompensation(with: NSMakeSize(w, h))
+        let y = tracker.absoluteY + tracker.absoluteYCompensation(with: NSMakeSize(w, h))
         
         let indexPath = IndexPath(item: 0, section: section)
         let attributes = NSCollectionViewLayoutAttributes(forSupplementaryViewOfKind: NSCollectionView.elementKindSectionFooter, with: indexPath)
