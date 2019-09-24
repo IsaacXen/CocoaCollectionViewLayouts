@@ -96,14 +96,18 @@ internal extension CollectionViewGridLayout {
         let availableWidth = _availableWidth(in: section) - gaps
         let minItemSize = _minimumItemSize(in: section)
         
-        let w = columns == 0 ? minItemSize.width : availableWidth / CGFloat(columns)
-        let h: CGFloat
+        var w = columns == 0 ? minItemSize.width : availableWidth / CGFloat(columns)
+        var h: CGFloat
         
         if _itemGrowDirection(in: section) == .bothDirection {
             let ratio = minItemSize.height / minItemSize.width
             h = w * ratio
         } else {
             h = minItemSize.height
+        }
+        
+        if scrollDirection == .horizontal {
+            (w, h) = (h, w)
         }
         
         return NSSize(width: w, height: h)
