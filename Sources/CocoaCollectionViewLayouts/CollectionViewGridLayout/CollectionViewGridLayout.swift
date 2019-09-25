@@ -273,12 +273,9 @@ public class CollectionViewGridLayout: NSCollectionViewLayout {
         }
     }
     
-    private var _oldBounds: NSRect = .zero
-    
     public override func shouldInvalidateLayout(forBoundsChange newBounds: NSRect) -> Bool {
         // invalidate layout only when the visible width changed
-        let invalidate = scrollDirection == .vertical ? newBounds.width != _oldBounds.width : newBounds.height != _oldBounds.height
-        _oldBounds = newBounds
+        let invalidate = scrollDirection == .vertical ? newBounds.width != _contentSize.width : false
         return invalidate
     }
     
