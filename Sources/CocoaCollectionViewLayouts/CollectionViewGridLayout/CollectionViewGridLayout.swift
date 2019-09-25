@@ -232,7 +232,7 @@ public class CollectionViewGridLayout: NSCollectionViewLayout {
         _footerCaches.removeAll()
         _headerCaches.removeAll()
         _itemCaches.removeAll()
-        
+
         _contentSize = _prepareContentSize()
         
         var tracker = NSCollectionViewLayout._ODSTracker(originInRect: NSRect(origin: .zero, size: _contentSize), scrollDirection: scrollDirection, layoutDirection: _layoutDirection)
@@ -275,7 +275,7 @@ public class CollectionViewGridLayout: NSCollectionViewLayout {
     
     public override func shouldInvalidateLayout(forBoundsChange newBounds: NSRect) -> Bool {
         // invalidate layout only when the visible width changed
-        let invalidate = scrollDirection == .vertical ? newBounds.width != _contentSize.width : false
+        let invalidate = scrollDirection == .vertical ? newBounds.width != _contentSize.width : newBounds.height != _contentSize.height
         return invalidate
     }
     

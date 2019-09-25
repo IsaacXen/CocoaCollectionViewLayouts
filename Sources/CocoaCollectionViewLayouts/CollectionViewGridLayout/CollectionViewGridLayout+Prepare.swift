@@ -10,7 +10,7 @@ internal extension CollectionViewGridLayout {
         
         switch scrollDirection {
             case .vertical:
-                size.width = collectionView.enclosingScrollView!.bounds.width
+                size.width = collectionView.enclosingScrollView?.bounds.width ?? collectionView.visibleRect.width
 
                 size.height = Array(0..<collectionView.numberOfSections).reduce(0, {
                     let rows = CGFloat(_numberOfRows(in: $1))
@@ -31,7 +31,7 @@ internal extension CollectionViewGridLayout {
                         + max(0, rows - 1) * _lineSpacing(in: $1)
                 })
                     
-                size.height = collectionView.enclosingScrollView!.bounds.height
+                size.height = collectionView.enclosingScrollView?.bounds.height ?? collectionView.visibleRect.width
             
             @unknown default: ()
         }

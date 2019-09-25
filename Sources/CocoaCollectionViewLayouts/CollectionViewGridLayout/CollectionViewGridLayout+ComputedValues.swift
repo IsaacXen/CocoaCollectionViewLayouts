@@ -69,7 +69,7 @@ internal extension CollectionViewGridLayout {
     
     var _visibleWidth: CGFloat {
         guard let collectionView = collectionView else { return 0 }
-        return scrollDirection == .vertical ? collectionView.enclosingScrollView!.bounds.width : collectionView.enclosingScrollView!.bounds.height
+        return scrollDirection == .vertical ? collectionView.enclosingScrollView?.bounds.width ?? collectionView.visibleRect.width : collectionView.enclosingScrollView?.bounds.height ?? collectionView.visibleRect.height
     }
     
     func _contentWidth(in section: Int) -> CGFloat {
